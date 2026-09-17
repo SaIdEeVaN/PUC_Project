@@ -1,0 +1,22 @@
+# Build output
+puc
+*.o
+*.out
+*.exe
+
+# Debug / analysis artifacts
+*.dSYM/
+*.su
+*.gcno
+*.gcda
+*.gcov
+vgcore.*
+core
+
+# Editor / OS cruft
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
