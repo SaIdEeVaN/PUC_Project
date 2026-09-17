@@ -201,6 +201,7 @@ static void help(void)
     printf("  -props    Display properties of matrices\n");
     printf("  -trans    Perform matrix transpose\n");
     printf("  -inv      Perform matrix inversion\n");
+    printf("  -det      Compute the determinant of a square matrix\n");
     printf("  -exit     Exit the program\n");
 }
 
@@ -513,6 +514,97 @@ static void inverse_matrix(void)
     print_matrix_double(inverse, n, n);
 }
 
+/*
+ * Determinant by Bareiss fraction-free elimination.
+ *
+ * Every division in the inner loop is exact, so an integer matrix yields an
+ * exact integer determinant with none of the round-off that a floating-point
+ * LU decomposition would introduce. Intermediate values are bounded by the
+ * Hadamard bound, which for a 5x5 keeps entries up to roughly +/-2700 exact
+ * in 64 bits; beyond that the arithmetic can overflow, which is not detected.
+ */
+static long long determinant(const int matrix[][MAX_SIZE], int n)
+{
+    long long work[MAX_SIZE][MAX_SIZE];
+    long long previous = 1;
+    int sign = 1;
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            work[i][j] = matrix[i][j];
+        }
+    }
+
+    for (int k = 0; k < n - 1; k++)
+    {
+        if (work[k][k] == 0)
+        {
+            int swap = -1;
+            for (int row = k + 1; row < n; row++)
+            {
+                if (work[row][k] != 0)
+                {
+                    swap = row;
+                    break;
+                }
+            }
+
+            /* A wholly zero column below the diagonal means a zero
+               determinant, and also guards the division by `previous`. */
+            if (swap < 0)
+            {
+                return 0;
+            }
+
+            for (int j = 0; j < n; j++)
+            {
+                long long temp = work[k][j];
+                work[k][j] = work[swap][j];
+                work[swap][j] = temp;
+            }
+            sign = -sign;
+        }
+
+        for (int i = k + 1; i < n; i++)
+        {
+            for (int j = k + 1; j < n; j++)
+            {
+                work[i][j] = (work[i][j] * work[k][k]
+                              - work[i][k] * work[k][j]) / previous;
+            }
+        }
+        previous = work[k][k];
+    }
+
+    return sign * work[n - 1][n - 1];
+}
+
+static void determinant_matrix(void)
+{
+    int rows, columns;
+    int matrix[MAX_SIZE][MAX_SIZE];
+
+    if (!read_dimensions("Enter the number of rows and columns: ",
+                         &rows, &columns))
+    {
+        return;
+    }
+    if (rows != columns)
+    {
+        printf("Determinant is only defined for a square matrix.\n");
+        return;
+    }
+    if (!read_matrix(matrix, rows, rows))
+    {
+        return;
+    }
+
+    printf("The determinant of the matrix is: %lld\n",
+           determinant(matrix, rows));
+}
+
 /* ------------------------------------------------------------------ */
 
 int main(void)
@@ -568,6 +660,10 @@ int main(void)
         else if (strcmp(option, "-inv") == 0)
         {
             inverse_matrix();
+        }
+        else if (strcmp(option, "-det") == 0)
+        {
+            determinant_matrix();
         }
         else if (strcmp(option, "-exit") == 0)
         {

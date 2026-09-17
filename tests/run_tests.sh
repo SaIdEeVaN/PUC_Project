@@ -196,6 +196,24 @@ run_test 'zero and negative dimensions are rejected' \
     'has:Matrix dimensions must be at least 1.' \
     'not:The sum of the matrices is:'
 
+# --------------------------------------------------------- determinant
+
+run_test 'determinant of a 2x2 matrix' \
+    '-det\n2 2\n4 7\n2 6\n-exit\n' \
+    'has:The determinant of the matrix is: 10'
+
+run_test 'determinant of a 3x3 matrix' \
+    '-det\n3 3\n6 1 1\n4 -2 5\n2 8 7\n-exit\n' \
+    'has:The determinant of the matrix is: -306'
+
+run_test 'determinant of a singular matrix is zero' \
+    '-det\n2 2\n1 2\n2 4\n-exit\n' \
+    'has:The determinant of the matrix is: 0'
+
+run_test 'determinant rejects a non-square matrix' \
+    '-det\n2 3\n-exit\n' \
+    'has:Determinant is only defined for a square matrix.'
+
 # -------------------------------------------------------------- report
 
 printf '\n%d/%d passed\n' "$pass" "$((pass + fail))"
