@@ -1,21 +1,20 @@
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 #define MAX_SIZE 5
 
-void sum_matrix();
-void diff_matrix();
-void multiplication_matrix();
-void multiple_matrix_multiplication();
-void matrix_properties();
-void transpose_matrix();
-void inverse_matrix();
-void help();
+void sum_matrix(void);
+void diff_matrix(void);
+void multiplication_matrix(void);
+void multiple_matrix_multiplication(void);
+void matrix_properties(void);
+void transpose_matrix(void);
+void inverse_matrix(void);
+void help(void);
 
-int determinant(int matrix[MAX_SIZE][MAX_SIZE], int n);
-void adjoint(int matrix[MAX_SIZE][MAX_SIZE], int adj[MAX_SIZE][MAX_SIZE]);
+void input_matrix(int matrix[MAX_SIZE][MAX_SIZE], int rows, int columns);
+void display_matrix(int matrix[MAX_SIZE][MAX_SIZE], int rows, int columns);
 
-int main()
+int main(void)
 {
 
     printf(" __  __       _        _         _____      _            _       _             \n");
@@ -79,7 +78,7 @@ int main()
     return 0;
 }
 
-void help()
+void help(void)
 {
     printf("Options:\n");
     printf("  --help    Display this help message\n");
@@ -117,7 +116,7 @@ void display_matrix(int matrix[MAX_SIZE][MAX_SIZE], int rows, int columns)
     }
 }
 
-void sum_matrix()
+void sum_matrix(void)
 {
     int rows, columns;
     int matrix1[MAX_SIZE][MAX_SIZE], matrix2[MAX_SIZE][MAX_SIZE], sum[MAX_SIZE][MAX_SIZE];
@@ -146,7 +145,7 @@ void sum_matrix()
     display_matrix(sum, rows, columns);
 }
 
-void diff_matrix()
+void diff_matrix(void)
 {
     int rows, columns;
     int matrix1[MAX_SIZE][MAX_SIZE], matrix2[MAX_SIZE][MAX_SIZE], diff[MAX_SIZE][MAX_SIZE];
@@ -175,7 +174,7 @@ void diff_matrix()
     display_matrix(diff, rows, columns);
 }
 
-void multiplication_matrix()
+void multiplication_matrix(void)
 {
     int rows1, columns1, rows2, columns2;
     int matrix1[MAX_SIZE][MAX_SIZE], matrix2[MAX_SIZE][MAX_SIZE], product[MAX_SIZE][MAX_SIZE] = {0};
@@ -210,7 +209,7 @@ void multiplication_matrix()
     display_matrix(product, rows1, columns2);
 }
 
-void multiple_matrix_multiplication()
+void multiple_matrix_multiplication(void)
 {
     int n;
     printf("Enter the number of matrices to multiply: ");
@@ -268,7 +267,7 @@ void multiple_matrix_multiplication()
     display_matrix(result, rows[0], columns[n - 1]);
 }
 
-void matrix_properties()
+void matrix_properties(void)
 {
     printf("Properties of Matrix Multiplication:\n");
     printf("1. Associative: (AB)C = A(BC)\n");
@@ -278,7 +277,7 @@ void matrix_properties()
     printf("5. Zero Matrix: A0 = 0 = 0A\n");
 }
 
-void transpose_matrix()
+void transpose_matrix(void)
 {
     int rows, columns;
     int matrix[MAX_SIZE][MAX_SIZE], transpose[MAX_SIZE][MAX_SIZE];
@@ -306,7 +305,7 @@ void transpose_matrix()
     display_matrix(transpose, columns, rows);
 }
 
-void inverse_matrix()
+void inverse_matrix(void)
 {
     int rows, columns;
     printf("Enter the number of Rows and Columns of the matrix: ");
