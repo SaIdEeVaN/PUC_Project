@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [gcc, clang]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: make CC=${{ matrix.cc }}
+
+      - name: Test
+        run: make test CC=${{ matrix.cc }}
+
+      - name: Build and test under AddressSanitizer and UBSan
+        run: |
+          make clean
+          make debug CC=${{ matrix.cc }}
+          ./tests/run_tests.sh ./puc
+
+  warnings-are-errors:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build with -Werror
+        run: make CFLAGS="-std=c11 -Wall -Wextra -Wstrict-prototypes -Wmissing-prototypes -Wshadow -Wconversion -O2 -Werror"

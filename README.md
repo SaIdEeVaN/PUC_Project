@@ -1,14 +1,15 @@
 # Matrix Calculator
 
 A small interactive matrix calculator written in C. It presents a prompt and
-performs addition, subtraction, multiplication, transposition and inversion on
-matrices entered by hand.
+performs addition, subtraction, multiplication, transposition, inversion and
+determinants on matrices entered by hand.
 
 ## Build
 
 ```sh
 make            # builds ./puc
 make run        # builds, then runs
+make test       # builds, then runs the test suite
 make debug      # -O0 -g with AddressSanitizer + UBSan
 make clean
 ```
@@ -16,8 +17,10 @@ make clean
 Or without `make`:
 
 ```sh
-cc -std=c11 -Wall -Wextra -O2 -o puc PUC.c
+cc -std=c11 -Wall -Wextra -O2 -o puc PUC.c -lm
 ```
+
+The only requirements are a C11 compiler and a POSIX shell for the tests.
 
 ## Usage
 
@@ -34,11 +37,13 @@ passing them as `./puc -add` has no effect.
 | `-mmulti` | Multiply a chain of matrices |
 | `-props`  | Print the algebraic properties of matrix multiplication |
 | `-trans`  | Transpose a matrix |
-| `-inv`    | Invert a square matrix (Gauss-Jordan elimination) |
+| `-inv`    | Invert a square matrix |
+| `-det`    | Determinant of a square matrix |
 | `-exit`   | Quit |
 
 Each command prompts for the dimensions first, then reads the elements in
-row-major order, whitespace-separated.
+row-major order, whitespace-separated. Invalid input is reported and the
+command is abandoned, returning you to the prompt.
 
 ### Example
 
@@ -56,21 +61,43 @@ The sum of the matrices is:
 10 12
 ```
 
-## Limits and known issues
+## Implementation notes
 
-- Matrices are capped at **5x5** (`MAX_SIZE` in `PUC.c`).
-- All operations use `int` elements except `-inv`, which uses `double` and
+- `-inv` uses **Gauss-Jordan elimination with partial pivoting**. Selecting the
+  largest available pivot keeps the elimination numerically stable and lets
+  matrices with a zero on the diagonal — `[[0,1],[1,0]]`, for instance — be
+  inverted rather than being mistaken for singular ones. Singularity is judged
+  against an epsilon rather than an exact comparison against zero.
+- `-det` uses **Bareiss fraction-free elimination**. Every division in the inner
+  loop is exact, so an integer matrix gives an exact integer determinant with
+  no floating-point round-off: a singular matrix reports `0`, not `-2.4e-16`.
+- Elements are `int` everywhere except `-inv`, which works in `double` and
   prints to two decimal places.
-- Input is **not validated**. The 11 `-Wunused-result` warnings from the `-O2`
-  build are real: no `scanf` return value is checked, so non-numeric input
-  leaves variables uninitialised rather than producing an error.
-- `-inv` prints a message for a non-square or singular matrix but then
-  continues anyway instead of returning, so the output that follows is
-  meaningless in those cases.
-- `-multi` validates that the inner dimensions agree but does not check the
-  operands against `MAX_SIZE`, unlike every other command. Asking it for two
-  6x6 matrices overruns the arrays; `make debug` reports it as a
-  `stack-buffer-overflow`.
-- Negative dimensions are accepted everywhere.
 
-These are pre-existing behaviours, documented here rather than changed.
+## Limits
+
+- Matrices are capped at **5x5** (`MAX_SIZE` in `PUC.c`), and `-mmulti` accepts
+  a chain of at most **10** (`MAX_MATRICES`). Both are single constants.
+- `-det` is exact for entries up to roughly ±2700 in a 5x5 — the Hadamard bound
+  against a 64-bit result. Larger entries can overflow, and that is not
+  detected.
+
+## Tests
+
+`tests/run_tests.sh` drives the compiled binary over stdin and checks what it
+prints. It is POSIX shell with no dependencies, and takes the binary as its
+optional first argument:
+
+```sh
+make test                      # or:
+./tests/run_tests.sh ./puc
+```
+
+Each case is checked with a timeout, so a hang fails the run instead of
+wedging it. Alongside the per-command cases there is a regression test for
+every bug fixed in this repository's history, including the read loop that
+used to spin forever on end-of-input and the `-multi` path that used to
+overrun its arrays on oversized input.
+
+CI builds with both GCC and Clang, runs the suite under AddressSanitizer and
+UBSan, and builds once more with `-Wshadow -Wconversion -Werror`.
