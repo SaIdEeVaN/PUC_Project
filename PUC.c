@@ -1,21 +1,20 @@
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 #define MAX_SIZE 5
 
-void sum_matrix();
-void diff_matrix();
-void multiplication_matrix();
-void multiple_matrix_multiplication();
-void matrix_properties();
-void transpose_matrix();
-void inverse_matrix();
-void help();
+void sum_matrix(void);
+void diff_matrix(void);
+void multiplication_matrix(void);
+void multiple_matrix_multiplication(void);
+void matrix_properties(void);
+void transpose_matrix(void);
+void inverse_matrix(void);
+void help(void);
 
-int determinant(int matrix[MAX_SIZE][MAX_SIZE], int n);
-void adjoint(int matrix[MAX_SIZE][MAX_SIZE], int adj[MAX_SIZE][MAX_SIZE]);
+void input_matrix(int matrix[MAX_SIZE][MAX_SIZE], int rows, int columns);
+void display_matrix(int matrix[MAX_SIZE][MAX_SIZE], int rows, int columns);
 
-int main() 
+int main(void)
 {
 
     printf(" __  __       _        _         _____      _            _       _             \n");
@@ -28,50 +27,50 @@ int main()
 
     printf("Use --help to see the available options.\n");
 
-    while (1) 
+    while (1)
     {
         char option[100];
         printf("\nEnter an option: ");
         scanf("%s", option);
 
-        if (strcmp(option, "--help") == 0) 
+        if (strcmp(option, "--help") == 0)
         {
             help();
-        } 
-        else if (strcmp(option, "-add") == 0) 
+        }
+        else if (strcmp(option, "-add") == 0)
         {
             sum_matrix();
-        } 
-        else if (strcmp(option, "-sub") == 0) 
+        }
+        else if (strcmp(option, "-sub") == 0)
         {
             diff_matrix();
-        } 
-        else if (strcmp(option, "-multi") == 0) 
+        }
+        else if (strcmp(option, "-multi") == 0)
         {
             multiplication_matrix();
-        } 
-        else if (strcmp(option, "-mmulti") == 0) 
+        }
+        else if (strcmp(option, "-mmulti") == 0)
         {
             multiple_matrix_multiplication();
-        } 
-        else if (strcmp(option, "-props") == 0) 
+        }
+        else if (strcmp(option, "-props") == 0)
         {
             matrix_properties();
-        } 
-        else if (strcmp(option, "-trans") == 0) 
+        }
+        else if (strcmp(option, "-trans") == 0)
         {
             transpose_matrix();
-        } 
-        else if (strcmp(option, "-inv") == 0) 
+        }
+        else if (strcmp(option, "-inv") == 0)
         {
             inverse_matrix();
-        } 
-        else if (strcmp(option, "-exit") == 0) 
+        }
+        else if (strcmp(option, "-exit") == 0)
         {
             printf("Exiting the program.\n");
             break;
-        } 
-        else 
+        }
+        else
         {
             printf("Unknown option: %s. Use --help for usage information.\n", option);
         }
@@ -79,7 +78,7 @@ int main()
     return 0;
 }
 
-void help() 
+void help(void)
 {
     printf("Options:\n");
     printf("  --help    Display this help message\n");
@@ -93,23 +92,23 @@ void help()
     printf("  -exit     Exit the program\n");
 }
 
-void input_matrix(int matrix[MAX_SIZE][MAX_SIZE], int rows, int columns) 
+void input_matrix(int matrix[MAX_SIZE][MAX_SIZE], int rows, int columns)
 {
     printf("Enter the elements of the matrix (%d x %d):\n", rows, columns);
-    for (int i = 0; i < rows; i++) 
+    for (int i = 0; i < rows; i++)
     {
-        for (int j = 0; j < columns; j++) 
+        for (int j = 0; j < columns; j++)
         {
             scanf("%d", &matrix[i][j]);
         }
     }
 }
 
-void display_matrix(int matrix[MAX_SIZE][MAX_SIZE], int rows, int columns) 
+void display_matrix(int matrix[MAX_SIZE][MAX_SIZE], int rows, int columns)
 {
-    for (int i = 0; i < rows; i++) 
+    for (int i = 0; i < rows; i++)
     {
-        for (int j = 0; j < columns; j++) 
+        for (int j = 0; j < columns; j++)
         {
             printf("%d ", matrix[i][j]);
         }
@@ -117,7 +116,7 @@ void display_matrix(int matrix[MAX_SIZE][MAX_SIZE], int rows, int columns)
     }
 }
 
-void sum_matrix() 
+void sum_matrix(void)
 {
     int rows, columns;
     int matrix1[MAX_SIZE][MAX_SIZE], matrix2[MAX_SIZE][MAX_SIZE], sum[MAX_SIZE][MAX_SIZE];
@@ -125,7 +124,7 @@ void sum_matrix()
     printf("Enter the number of rows and columns: ");
     scanf("%d %d", &rows, &columns);
 
-    if (rows > MAX_SIZE || columns > MAX_SIZE) 
+    if (rows > MAX_SIZE || columns > MAX_SIZE)
     {
         printf("Matrix size exceeds the maximum allowed (%d x %d).\n", MAX_SIZE, MAX_SIZE);
         return;
@@ -134,9 +133,9 @@ void sum_matrix()
     input_matrix(matrix1, rows, columns);
     input_matrix(matrix2, rows, columns);
 
-    for (int i = 0; i < rows; i++) 
+    for (int i = 0; i < rows; i++)
     {
-        for (int j = 0; j < columns; j++) 
+        for (int j = 0; j < columns; j++)
         {
             sum[i][j] = matrix1[i][j] + matrix2[i][j];
         }
@@ -146,7 +145,7 @@ void sum_matrix()
     display_matrix(sum, rows, columns);
 }
 
-void diff_matrix() 
+void diff_matrix(void)
 {
     int rows, columns;
     int matrix1[MAX_SIZE][MAX_SIZE], matrix2[MAX_SIZE][MAX_SIZE], diff[MAX_SIZE][MAX_SIZE];
@@ -154,7 +153,7 @@ void diff_matrix()
     printf("Enter the number of rows and columns: ");
     scanf("%d %d", &rows, &columns);
 
-    if (rows > MAX_SIZE || columns > MAX_SIZE) 
+    if (rows > MAX_SIZE || columns > MAX_SIZE)
     {
         printf("Matrix size exceeds the maximum allowed (%d x %d).\n", MAX_SIZE, MAX_SIZE);
         return;
@@ -163,9 +162,9 @@ void diff_matrix()
     input_matrix(matrix1, rows, columns);
     input_matrix(matrix2, rows, columns);
 
-    for (int i = 0; i < rows; i++) 
+    for (int i = 0; i < rows; i++)
     {
-        for (int j = 0; j < columns; j++) 
+        for (int j = 0; j < columns; j++)
         {
             diff[i][j] = matrix1[i][j] - matrix2[i][j];
         }
@@ -175,7 +174,7 @@ void diff_matrix()
     display_matrix(diff, rows, columns);
 }
 
-void multiplication_matrix() 
+void multiplication_matrix(void)
 {
     int rows1, columns1, rows2, columns2;
     int matrix1[MAX_SIZE][MAX_SIZE], matrix2[MAX_SIZE][MAX_SIZE], product[MAX_SIZE][MAX_SIZE] = {0};
@@ -186,7 +185,7 @@ void multiplication_matrix()
     printf("Enter the number of rows and columns for the second matrix: ");
     scanf("%d %d", &rows2, &columns2);
 
-    if (columns1 != rows2) 
+    if (columns1 != rows2)
     {
         printf("Matrix multiplication not possible. Number of columns in the first matrix should be equal to the number of rows in the second matrix.\n");
         return;
@@ -195,11 +194,11 @@ void multiplication_matrix()
     input_matrix(matrix1, rows1, columns1);
     input_matrix(matrix2, rows2, columns2);
 
-    for (int i = 0; i < rows1; i++) 
+    for (int i = 0; i < rows1; i++)
     {
-        for (int j = 0; j < columns2; j++) 
+        for (int j = 0; j < columns2; j++)
         {
-            for (int k = 0; k < columns1; k++) 
+            for (int k = 0; k < columns1; k++)
             {
                 product[i][j] += matrix1[i][k] * matrix2[k][j];
             }
@@ -210,13 +209,13 @@ void multiplication_matrix()
     display_matrix(product, rows1, columns2);
 }
 
-void multiple_matrix_multiplication() 
+void multiple_matrix_multiplication(void)
 {
     int n;
     printf("Enter the number of matrices to multiply: ");
     scanf("%d", &n);
 
-    if (n < 2) 
+    if (n < 2)
     {
         printf("At least two matrices are required for multiplication.\n");
         return;
@@ -225,12 +224,12 @@ void multiple_matrix_multiplication()
     int matrices[MAX_SIZE][MAX_SIZE][MAX_SIZE];
     int rows[MAX_SIZE], columns[MAX_SIZE];
 
-    for (int k = 0; k < n; k++) 
+    for (int k = 0; k < n; k++)
     {
         printf("Enter the number of rows and columns for matrix %d: ", k + 1);
         scanf("%d %d", &rows[k], &columns[k]);
 
-        if (rows[k] > MAX_SIZE || columns[k] > MAX_SIZE) 
+        if (rows[k] > MAX_SIZE || columns[k] > MAX_SIZE)
         {
             printf("Matrix size exceeds the maximum allowed (%d x %d).\n", MAX_SIZE, MAX_SIZE);
             return;
@@ -238,7 +237,7 @@ void multiple_matrix_multiplication()
 
         input_matrix(matrices[k], rows[k], columns[k]);
 
-        if (k > 0 && columns[k - 1] != rows[k]) 
+        if (k > 0 && columns[k - 1] != rows[k])
         {
             printf("Matrix multiplication not possible between matrix %d and %d.\n", k, k + 1);
             return;
@@ -248,14 +247,14 @@ void multiple_matrix_multiplication()
     int result[MAX_SIZE][MAX_SIZE];
     memcpy(result, matrices[0], sizeof(result));
 
-    for (int k = 1; k < n; k++) 
+    for (int k = 1; k < n; k++)
     {
         int temp[MAX_SIZE][MAX_SIZE] = {0};
-        for (int i = 0; i < rows[0]; i++) 
+        for (int i = 0; i < rows[0]; i++)
         {
-            for (int j = 0; j < columns[k]; j++) 
+            for (int j = 0; j < columns[k]; j++)
             {
-                for (int l = 0; l < columns[k - 1]; l++) 
+                for (int l = 0; l < columns[k - 1]; l++)
                 {
                     temp[i][j] += result[i][l] * matrices[k][l][j];
                 }
@@ -268,7 +267,7 @@ void multiple_matrix_multiplication()
     display_matrix(result, rows[0], columns[n - 1]);
 }
 
-void matrix_properties() 
+void matrix_properties(void)
 {
     printf("Properties of Matrix Multiplication:\n");
     printf("1. Associative: (AB)C = A(BC)\n");
@@ -278,7 +277,7 @@ void matrix_properties()
     printf("5. Zero Matrix: A0 = 0 = 0A\n");
 }
 
-void transpose_matrix() 
+void transpose_matrix(void)
 {
     int rows, columns;
     int matrix[MAX_SIZE][MAX_SIZE], transpose[MAX_SIZE][MAX_SIZE];
@@ -286,7 +285,7 @@ void transpose_matrix()
     printf("Enter the number of rows and columns: ");
     scanf("%d %d", &rows, &columns);
 
-    if (rows > MAX_SIZE || columns > MAX_SIZE) 
+    if (rows > MAX_SIZE || columns > MAX_SIZE)
     {
         printf("Matrix size exceeds the maximum allowed (%d x %d).\n", MAX_SIZE, MAX_SIZE);
         return;
@@ -294,9 +293,9 @@ void transpose_matrix()
 
     input_matrix(matrix, rows, columns);
 
-    for (int i = 0; i < rows; i++) 
+    for (int i = 0; i < rows; i++)
     {
-        for (int j = 0; j < columns; j++) 
+        for (int j = 0; j < columns; j++)
         {
             transpose[j][i] = matrix[i][j];
         }
@@ -306,13 +305,13 @@ void transpose_matrix()
     display_matrix(transpose, columns, rows);
 }
 
-void inverse_matrix() 
+void inverse_matrix(void)
 {
     int rows, columns;
     printf("Enter the number of Rows and Columns of the matrix: ");
     scanf("%d %d", &rows, &columns);
 
-    if (rows != columns) 
+    if (rows != columns)
     {
         printf("Inverse of a matrix can only be found for a square matrix.\n");
     }
@@ -321,44 +320,44 @@ void inverse_matrix()
     double matrix[MAX_SIZE][MAX_SIZE], temp[MAX_SIZE][MAX_SIZE];
 
     printf("Enter the elements of the matrix:\n");
-    for (int i = 0; i < n; i++) 
+    for (int i = 0; i < n; i++)
     {
-        for (int j = 0; j < n; j++) 
+        for (int j = 0; j < n; j++)
         {
             scanf("%lf", &matrix[i][j]);
         }
     }
 
     // Initialize the identity matrix
-    for (int i = 0; i < n; i++) 
+    for (int i = 0; i < n; i++)
     {
-        for (int j = 0; j < n; j++) 
+        for (int j = 0; j < n; j++)
         {
             temp[i][j] = (i == j) ? 1.0 : 0.0;
         }
     }
 
     // Perform Gauss-Jordan Elimination
-    for (int i = 0; i < n; i++) 
+    for (int i = 0; i < n; i++)
     {
         double diagElement = matrix[i][i];
-        if (diagElement == 0.0) 
+        if (diagElement == 0.0)
         {
             printf("Matrix is singular and cannot be inverted.\n");
         }
 
-        for (int j = 0; j < n; j++) 
+        for (int j = 0; j < n; j++)
         {
             matrix[i][j] /= diagElement;
             temp[i][j] /= diagElement;
         }
 
-        for (int k = 0; k < n; k++) 
+        for (int k = 0; k < n; k++)
         {
-            if (k != i) 
+            if (k != i)
             {
                 double factor = matrix[k][i];
-                for (int j = 0; j < n; j++) 
+                for (int j = 0; j < n; j++)
                 {
                     matrix[k][j] -= matrix[i][j] * factor;
                     temp[k][j] -= temp[i][j] * factor;
@@ -369,9 +368,9 @@ void inverse_matrix()
 
     // Print the inverse matrix
     printf("The inverse of the matrix is:\n");
-    for (int i = 0; i < n; i++) 
+    for (int i = 0; i < n; i++)
     {
-        for (int j = 0; j < n; j++) 
+        for (int j = 0; j < n; j++)
         {
             printf("%.2lf ", temp[i][j]);
         }
