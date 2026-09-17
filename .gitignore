@@ -20,3 +20,4 @@ core
 *~
 .DS_Store
 Thumbs.db
+*.d

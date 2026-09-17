@@ -17,10 +17,24 @@ make clean
 Or without `make`:
 
 ```sh
-cc -std=c11 -Wall -Wextra -O2 -o puc PUC.c -lm
+cc -std=c11 -Wall -Wextra -O2 -Isrc -o puc src/*.c -lm
 ```
 
 The only requirements are a C11 compiler and a POSIX shell for the tests.
+
+## Layout
+
+| File | Contents |
+| ---- | -------- |
+| `src/matrix.h` / `.c` | The matrix operations. Pure: they read inputs, write outputs and print nothing, so they can be reasoned about without any I/O. |
+| `src/io.h` / `.c` | Reading dimensions and matrices from stdin, and printing them back. Owns all input validation and the end-of-input flag. |
+| `src/commands.h` / `.c` | One function per interactive command, wiring the I/O layer to the operations, plus the table that names them. |
+| `src/main.c` | The banner and the read-dispatch loop. |
+
+Commands are dispatched through a table in `commands.c` that carries each
+name, its help text and its handler. The help output is generated from that
+same table, so a new command is added in one place and cannot go
+undocumented.
 
 ## Usage
 
@@ -76,8 +90,9 @@ The sum of the matrices is:
 
 ## Limits
 
-- Matrices are capped at **5x5** (`MAX_SIZE` in `PUC.c`), and `-mmulti` accepts
-  a chain of at most **10** (`MAX_MATRICES`). Both are single constants.
+- Matrices are capped at **5x5** (`MAX_SIZE` in `src/matrix.h`), and `-mmulti`
+  accepts a chain of at most **10** (`MAX_MATRICES`). Both are single
+  constants.
 - `-det` is exact for entries up to roughly ±2700 in a 5x5 — the Hadamard bound
   against a 64-bit result. Larger entries can overflow, and that is not
   detected.
