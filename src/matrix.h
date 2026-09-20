@@ -10,7 +10,7 @@
 #define MATRIX_H
 
 /* Largest matrix accepted, in either dimension. */
-#define MAX_SIZE 5
+#define MAX_SIZE 10
 
 /* Largest chain accepted by the repeated-multiplication command. */
 #define MAX_MATRICES 10

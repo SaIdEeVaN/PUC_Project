@@ -4,7 +4,8 @@
 # Drives the compiled binary over stdin and checks what it prints.
 # Usage: tests/run_tests.sh [path-to-binary]      (default ./puc)
 #
-# Cases assume MAX_SIZE == 5; the oversize cases feed 6x6 input.
+# The size limit is read from src/matrix.h rather than hardcoded, so raising
+# MAX_SIZE does not silently invalidate the oversize cases.
 
 BIN="${1:-./puc}"
 LIMIT=10          # a hang must fail the run, not wedge it
@@ -13,6 +14,58 @@ SEP='@@'          # line separator for block matching; absent from all output
 pass=0
 fail=0
 failed=''
+
+# Track the compiled-in limit instead of duplicating it here.
+HEADER="$(dirname "$0")/../src/matrix.h"
+MAX_SIZE=$(sed -n 's/^#define MAX_SIZE \([0-9][0-9]*\).*/\1/p' "$HEADER")
+if [ -z "$MAX_SIZE" ]; then
+    echo "error: could not read MAX_SIZE from $HEADER" >&2
+    exit 2
+fi
+OVERSIZE=$((MAX_SIZE + 1))
+
+# repeat_row <value> <count> -> "v v v ... " (trailing space)
+repeat_row() {
+    _i=0
+    _row=''
+    while [ "$_i" -lt "$2" ]; do
+        _row="${_row}${1} "
+        _i=$((_i + 1))
+    done
+    printf '%s' "$_row"
+}
+
+# filled_matrix <value> <n> -> n rows of n values, each row \n-terminated
+filled_matrix() {
+    _i=0
+    _out=''
+    while [ "$_i" -lt "$2" ]; do
+        _out="${_out}$(repeat_row "$1" "$2")\n"
+        _i=$((_i + 1))
+    done
+    printf '%s' "$_out"
+}
+
+# identity_matrix <n>
+identity_matrix() {
+    _i=0
+    _out=''
+    while [ "$_i" -lt "$1" ]; do
+        _j=0
+        _row=''
+        while [ "$_j" -lt "$1" ]; do
+            if [ "$_i" -eq "$_j" ]; then
+                _row="${_row}1 "
+            else
+                _row="${_row}0 "
+            fi
+            _j=$((_j + 1))
+        done
+        _out="${_out}${_row}\n"
+        _i=$((_i + 1))
+    done
+    printf '%s' "$_out"
+}
 
 if [ ! -x "$BIN" ]; then
     echo "error: $BIN is not executable; run 'make' first" >&2
@@ -128,10 +181,10 @@ run_test 'multiplication rejects mismatched dimensions' \
     'has:Matrix multiplication not possible.'
 
 # Regression: -multi skipped the MAX_SIZE check every other command makes,
-# so 6x6 overran the stack arrays.
+# so oversized input overran the stack arrays.
 run_test 'multiplication rejects oversize input' \
-    '-multi\n6 6\n6 6\n-exit\n' \
-    'has:Matrix size exceeds the maximum allowed (5 x 5).'
+    "-multi\n$OVERSIZE $OVERSIZE\n$OVERSIZE $OVERSIZE\n-exit\n" \
+    "has:Matrix size exceeds the maximum allowed ($MAX_SIZE x $MAX_SIZE)."
 
 run_test 'chained multiplication of three matrices' \
     '-mmulti\n3\n2 2\n1 1\n0 1\n2 2\n1 0\n1 1\n2 2\n1 1\n0 1\n-exit\n' \
@@ -195,6 +248,24 @@ run_test 'zero and negative dimensions are rejected' \
     '-add\n0 2\n-exit\n' \
     'has:Matrix dimensions must be at least 1.' \
     'not:The sum of the matrices is:'
+
+# ------------------------------------------------------ at the limit
+
+ones=$(filled_matrix 1 "$MAX_SIZE")
+twos_row=$(repeat_row 2 "$MAX_SIZE" | sed "s/ *$//")
+
+run_test "addition at the maximum size (${MAX_SIZE}x${MAX_SIZE})" \
+    "-add\n$MAX_SIZE $MAX_SIZE\n${ones}${ones}-exit\n" \
+    "block:The sum of the matrices is:|${twos_row}"
+
+run_test "determinant of the ${MAX_SIZE}x${MAX_SIZE} identity is 1" \
+    "-det\n$MAX_SIZE $MAX_SIZE\n$(identity_matrix "$MAX_SIZE")-exit\n" \
+    'has:The determinant of the matrix is: 1'
+
+run_test "inverse of the ${MAX_SIZE}x${MAX_SIZE} identity is the identity" \
+    "-inv\n$MAX_SIZE $MAX_SIZE\n$(identity_matrix "$MAX_SIZE")-exit\n" \
+    'has:The inverse of the matrix is:' \
+    'not:nan' 'not:singular' 'not:-0.00'
 
 # --------------------------------------------------------- determinant
 

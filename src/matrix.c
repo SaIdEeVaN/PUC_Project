@@ -64,9 +64,14 @@ void matrix_transpose(const int in[][MAX_SIZE], int out[][MAX_SIZE],
  *
  * Every division in the inner loop is exact, so an integer matrix yields an
  * exact integer determinant with none of the round-off that a floating-point
- * LU decomposition would introduce. Intermediate values are bounded by the
- * Hadamard bound, which for a 5x5 keeps entries up to roughly +/-2700 exact
- * in 64 bits; beyond that the arithmetic can overflow, which is not detected.
+ * LU decomposition would introduce.
+ *
+ * The arithmetic is 64-bit, and the binding limit is the intermediate
+ * products rather than the determinant: work[i][j] * work[k][k] multiplies
+ * two minors, so it overflows well before the result would. Measured safe
+ * entry magnitudes are around +/-1000 up to 4x4, +/-100 at 5x5 and +/-5 at
+ * 10x10. Past those the result can be wrong with no indication, because the
+ * overflow is not detected. The README carries the full table.
  */
 long long matrix_determinant(const int in[][MAX_SIZE], int n)
 {

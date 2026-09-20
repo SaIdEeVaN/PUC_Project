@@ -90,12 +90,22 @@ The sum of the matrices is:
 
 ## Limits
 
-- Matrices are capped at **5x5** (`MAX_SIZE` in `src/matrix.h`), and `-mmulti`
-  accepts a chain of at most **10** (`MAX_MATRICES`). Both are single
+- Matrices are capped at **10x10** (`MAX_SIZE` in `src/matrix.h`), and
+  `-mmulti` accepts a chain of at most **10** (`MAX_MATRICES`). Both are single
   constants.
-- `-det` is exact for entries up to roughly ±2700 in a 5x5 — the Hadamard bound
-  against a 64-bit result. Larger entries can overflow, and that is not
-  detected.
+- **`-det` overflows silently on larger matrices.** It computes in 64-bit
+  integers, and the binding limit is not the determinant but the intermediate
+  products Bareiss forms: `work[i][j] * work[k][k]` multiplies two minors, so
+  it overflows well before the result would. The largest entry magnitude that
+  came back exact for every one of 25 random matrices at each size:
+
+  | size          | 2-4    | 5    | 6   | 7-8 | 9  | 10 |
+  | ------------- | ------ | ---- | --- | --- | -- | -- |
+  | safe entries  | ±1000+ | ±100 | ±50 | ±20 | ±10 | ±5 |
+
+  Past those the result can be wrong with no indication, because the overflow
+  is not detected. Every other command is unaffected: `-add`, `-sub`, `-multi`
+  and `-mmulti` are plain `int` arithmetic, and `-inv` works in `double`.
 
 ## Tests
 
