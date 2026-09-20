@@ -225,8 +225,11 @@ static void command_determinant(void)
         return;
     }
 
-    printf("The determinant of the matrix is: %lld\n",
-           matrix_determinant(matrix, rows));
+    char formatted[MATRIX_DET_STRING_MAX];
+
+    printf("The determinant of the matrix is: %s\n",
+           matrix_det_to_string(matrix_determinant(matrix, rows), formatted,
+                                sizeof(formatted)));
 }
 
 static void command_properties(void)

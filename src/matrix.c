@@ -66,17 +66,18 @@ void matrix_transpose(const int in[][MAX_SIZE], int out[][MAX_SIZE],
  * exact integer determinant with none of the round-off that a floating-point
  * LU decomposition would introduce.
  *
- * The arithmetic is 64-bit, and the binding limit is the intermediate
- * products rather than the determinant: work[i][j] * work[k][k] multiplies
- * two minors, so it overflows well before the result would. Measured safe
- * entry magnitudes are around +/-1000 up to 4x4, +/-100 at 5x5 and +/-5 at
- * 10x10. Past those the result can be wrong with no indication, because the
- * overflow is not detected. The README carries the full table.
+ * The binding limit is the intermediate products rather than the
+ * determinant: work[i][j] * work[k][k] multiplies two minors, so it
+ * overflows long before the result would. The elimination therefore runs in
+ * MatrixDet, which is __int128 wherever the compiler has it. Overflow is
+ * still not detected, but the range it takes to provoke is far out of reach
+ * of anything this calculator can be typed; the README has the measured
+ * figures.
  */
-long long matrix_determinant(const int in[][MAX_SIZE], int n)
+MatrixDet matrix_determinant(const int in[][MAX_SIZE], int n)
 {
-    long long work[MAX_SIZE][MAX_SIZE];
-    long long previous = 1;
+    MatrixDet work[MAX_SIZE][MAX_SIZE];
+    MatrixDet previous = 1;
     int sign = 1;
 
     for (int i = 0; i < n; i++)
@@ -110,7 +111,7 @@ long long matrix_determinant(const int in[][MAX_SIZE], int n)
 
             for (int j = 0; j < n; j++)
             {
-                long long temp = work[k][j];
+                MatrixDet temp = work[k][j];
                 work[k][j] = work[swap][j];
                 work[swap][j] = temp;
             }
@@ -129,6 +130,47 @@ long long matrix_determinant(const int in[][MAX_SIZE], int n)
     }
 
     return sign * work[n - 1][n - 1];
+}
+
+const char *matrix_det_to_string(MatrixDet value, char *buffer, size_t size)
+{
+    char digits[MATRIX_DET_DIGITS + 1];
+    int count = 0;
+    int negative = value < 0;
+
+    /* Build the magnitude unsigned, so the most negative value - which has
+       no positive counterpart - negates without overflowing. */
+    MatrixDetMagnitude magnitude = negative
+        ? (MatrixDetMagnitude)0 - (MatrixDetMagnitude)value
+        : (MatrixDetMagnitude)value;
+
+    do
+    {
+        digits[count++] = (char)('0' + (int)(magnitude % 10));
+        magnitude /= 10;
+    } while (magnitude != 0);
+
+    if (size < (size_t)count + (negative ? 2u : 1u))
+    {
+        if (size > 0)
+        {
+            buffer[0] = '\0';
+        }
+        return buffer;
+    }
+
+    char *out = buffer;
+    if (negative)
+    {
+        *out++ = '-';
+    }
+    while (count > 0)
+    {
+        *out++ = digits[--count];
+    }
+    *out = '\0';
+
+    return buffer;
 }
 
 /* Exchange two rows of an n-column matrix. */

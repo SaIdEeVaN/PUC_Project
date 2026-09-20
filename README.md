@@ -85,6 +85,11 @@ The sum of the matrices is:
 - `-det` uses **Bareiss fraction-free elimination**. Every division in the inner
   loop is exact, so an integer matrix gives an exact integer determinant with
   no floating-point round-off: a singular matrix reports `0`, not `-2.4e-16`.
+  The elimination runs in `__int128` where the compiler provides it (GCC and
+  Clang do), falling back to `long long` otherwise. The result is not capped
+  at 64 bits either — the determinant of a 10x10 diagonal of 100s prints
+  exactly as 10^20 — and since `printf` has no length modifier for `__int128`,
+  `matrix_det_to_string()` renders the digits by hand.
 - Elements are `int` everywhere except `-inv`, which works in `double` and
   prints to two decimal places.
 
@@ -93,18 +98,18 @@ The sum of the matrices is:
 - Matrices are capped at **10x10** (`MAX_SIZE` in `src/matrix.h`), and
   `-mmulti` accepts a chain of at most **10** (`MAX_MATRICES`). Both are single
   constants.
-- **`-det` overflows silently on larger matrices.** It computes in 64-bit
-  integers, and the binding limit is not the determinant but the intermediate
-  products Bareiss forms: `work[i][j] * work[k][k]` multiplies two minors, so
-  it overflows well before the result would. The largest entry magnitude that
-  came back exact for every one of 25 random matrices at each size:
+- `-det` still has a range limit, though a distant one. The binding
+  constraint is not the determinant but the intermediate products Bareiss
+  forms: `work[i][j] * work[k][k]` multiplies two minors, so it overflows
+  before the result would. Largest entry magnitude with no mismatch in 200
+  random matrices per size, checked against an arbitrary-precision reference:
 
-  | size          | 2-4    | 5    | 6   | 7-8 | 9  | 10 |
-  | ------------- | ------ | ---- | --- | --- | -- | -- |
-  | safe entries  | ±1000+ | ±100 | ±50 | ±20 | ±10 | ±5 |
+  | matrix size  | 5       | 6-7    | 8-10 |
+  | ------------ | ------- | ------ | ---- |
+  | safe entries | ±10,000 | ±1,000 | ±100 |
 
-  Past those the result can be wrong with no indication, because the overflow
-  is not detected. Every other command is unaffected: `-add`, `-sub`, `-multi`
+  Past these the result can be wrong with no indication, as the overflow is
+  not detected. Every other command is unaffected: `-add`, `-sub`, `-multi`
   and `-mmulti` are plain `int` arithmetic, and `-inv` works in `double`.
 
 ## Tests

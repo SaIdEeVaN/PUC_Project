@@ -46,16 +46,16 @@ filled_matrix() {
     printf '%s' "$_out"
 }
 
-# identity_matrix <n>
-identity_matrix() {
+# diagonal_matrix <value> <n> -> n x n with <value> on the diagonal
+diagonal_matrix() {
     _i=0
     _out=''
-    while [ "$_i" -lt "$1" ]; do
+    while [ "$_i" -lt "$2" ]; do
         _j=0
         _row=''
-        while [ "$_j" -lt "$1" ]; do
+        while [ "$_j" -lt "$2" ]; do
             if [ "$_i" -eq "$_j" ]; then
-                _row="${_row}1 "
+                _row="${_row}${1} "
             else
                 _row="${_row}0 "
             fi
@@ -65,6 +65,11 @@ identity_matrix() {
         _i=$((_i + 1))
     done
     printf '%s' "$_out"
+}
+
+# identity_matrix <n>
+identity_matrix() {
+    diagonal_matrix 1 "$1"
 }
 
 if [ ! -x "$BIN" ]; then
@@ -261,6 +266,15 @@ run_test "addition at the maximum size (${MAX_SIZE}x${MAX_SIZE})" \
 run_test "determinant of the ${MAX_SIZE}x${MAX_SIZE} identity is 1" \
     "-det\n$MAX_SIZE $MAX_SIZE\n$(identity_matrix "$MAX_SIZE")-exit\n" \
     'has:The determinant of the matrix is: 1'
+
+# 100^10 = 1e20, which overflows a signed 64-bit result. The elimination and
+# the result are MatrixDet (__int128 where available), so this is exact. This
+# is the one case that a long long fallback build cannot satisfy, by design.
+if [ "$MAX_SIZE" -ge 10 ]; then
+    run_test 'determinant wider than 64 bits is exact' \
+        "-det\n10 10\n$(diagonal_matrix 100 10)-exit\n" \
+        'has:The determinant of the matrix is: 100000000000000000000'
+fi
 
 run_test "inverse of the ${MAX_SIZE}x${MAX_SIZE} identity is the identity" \
     "-inv\n$MAX_SIZE $MAX_SIZE\n$(identity_matrix "$MAX_SIZE")-exit\n" \
